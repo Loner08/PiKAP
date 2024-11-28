@@ -1,0 +1,98 @@
+from operator import itemgetter
+
+# Классы
+class Syntax:
+    """Синтаксическая конструкция"""
+    def __init__(self, id, name, lang_id):
+        self.id = id
+        self.name = name
+        self.lang_id = lang_id
+
+
+class Language:
+    """Язык программирования"""
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+
+class SyntaxLang:
+    """
+    'Синтаксические конструкции языков' 
+    для реализации связи многие-ко-многим
+    """
+    def __init__(self, lang_id, syntax_id):
+        self.lang_id = lang_id
+        self.syntax_id = syntax_id
+
+
+# Данные
+languages = [
+    Language(1, 'Python'),
+    Language(2, 'C++'),
+    Language(3, 'JavaScript'),
+]
+
+syntaxes = [
+    Syntax(1, 'Цикл for', 1),
+    Syntax(2, 'Условие if', 2),
+    Syntax(3, 'Функция', 1),
+    Syntax(4, 'Объект', 3),
+    Syntax(5, 'Массив', 2),
+]
+
+syntaxes_langs = [
+    SyntaxLang(1, 1),
+    SyntaxLang(1, 3),
+    SyntaxLang(2, 2),
+    SyntaxLang(2, 5),
+    SyntaxLang(3, 4),
+]
+
+
+# Основная функция
+def main():
+    # Соединение данных один-ко-многим
+    one_to_many = [
+        (s.name, l.name)
+        for l in languages
+        for s in syntaxes
+        if s.lang_id == l.id
+    ]
+
+    # Соединение данных многие-ко-многим
+    many_to_many_temp = [
+        (l.name, sl.lang_id, sl.syntax_id)
+        for l in languages
+        for sl in syntaxes_langs
+        if l.id == sl.lang_id
+    ]
+    
+    many_to_many = [
+        (s.name, l_name)
+        for l_name, _, syntax_id in many_to_many_temp
+        for s in syntaxes
+        if s.id == syntax_id
+    ]
+
+    print('Задание В1: Синтаксические конструкции для Python')
+    res_1 = [name for name, lang in one_to_many if lang == 'Python']
+    print(res_1)
+
+    print('\nЗадание В2: Языки с минимальной конструкцией по алфавиту')
+    res_2_unsorted = []
+    for l in languages:
+        l_syntaxes = list(filter(lambda x: x[1] == l.name, one_to_many))
+        if l_syntaxes:
+            min_syntax = min([syntax for syntax, _ in l_syntaxes])
+            res_2_unsorted.append((l.name, min_syntax))
+    res_2 = sorted(res_2_unsorted, key=itemgetter(1))
+    print(res_2)
+
+    print('\nЗадание В3: Связь конструкций и языков')
+    res_3 = sorted(many_to_many, key=itemgetter(0))
+    print(res_3)
+
+
+if __name__ == '__main__':
+    main()
